@@ -1,8 +1,8 @@
-    $bYKHXkzoi2je7US = 0x50000,
-    $TAuN= 0x50000,
-    $k2zlfZjEi = 0x2000000,
-    $p4l9R = 0x50000
-)
+$bYKHXkzoi2je7US = 0x50000
+$TAuN= 0x50000
+$k2zlfZjEi = 0x2000000
+$p4l9R = 0x50000
+
 
 $miHh6vr0Z1 = @"
 using System;
